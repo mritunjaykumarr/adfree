@@ -280,7 +280,7 @@ function renderDownloadButtons(videoId) {
   const url = `https://www.youtube.com/watch?v=${videoId}`;
 
   document.getElementById('mp4Sites').innerHTML = `
-    <a class="dl-site-btn" href="http://localhost:3000/download?url=${encodeURIComponent(url)}">
+    <a class="dl-site-btn" href="https://adfree-nsj3.onrender.com/download?url=${encodeURIComponent(url)}" target="_blank">
       <div class="site-ico"><i class="fa-solid fa-download"></i></div>
       <div class="site-txt">
         <span class="site-name">Download MP4</span>
@@ -290,7 +290,7 @@ function renderDownloadButtons(videoId) {
   `;
 
   document.getElementById('mp3Sites').innerHTML = `
-    <a class="dl-site-btn mp3" href="http://localhost:3000/download-mp3?url=${encodeURIComponent(url)}">
+    <a class="dl-site-btn mp3" href="https://adfree-nsj3.onrender.com/download-mp3?url=${encodeURIComponent(url)}" target="_blank">
       <div class="site-ico"><i class="fa-solid fa-music"></i></div>
       <div class="site-txt">
         <span class="site-name">Download MP3</span>
@@ -414,13 +414,11 @@ async function loadVideo() {
 
   const player = document.getElementById('player');
 
-  // ✅ use better embed
   player.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
 
   document.getElementById('loaderState').classList.remove('show');
   player.classList.add('show');
 
-  // 🔥 SMART fallback (FIXED)
   let fallbackTimer = setTimeout(() => {
     showFallback(id);
   }, 4000);
