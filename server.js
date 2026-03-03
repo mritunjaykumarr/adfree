@@ -35,7 +35,7 @@ app.get('/download', (req, res) => {
     return res.status(400).send("No URL provided");
   }
 
-  const command = `yt-dlp -f best -g "${url}"`;
+  const command = `python3 -m yt_dlp -f best -g "${url}"`;
 
   runCommand(command, res);
 });
