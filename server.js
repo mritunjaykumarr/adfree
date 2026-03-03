@@ -6,6 +6,26 @@ const app = express();
 app.use(cors());
 
 /* =========================
+   HELPER (SAFE EXEC)
+========================= */
+function runCommand(command, res) {
+  exec(command, (err, stdout, stderr) => {
+    if (err || !stdout) {
+      console.error("ERROR:", err || stderr);
+      return res.status(500).send("Download failed");
+    }
+
+    const cleanUrl = stdout.trim().split('\n')[0];
+
+    if (!cleanUrl.startsWith("http")) {
+      return res.status(500).send("Invalid download URL");
+    }
+
+    res.redirect(cleanUrl);
+  });
+}
+
+/* =========================
    VIDEO DOWNLOAD (MP4)
 ========================= */
 app.get('/download', (req, res) => {
@@ -17,36 +37,36 @@ app.get('/download', (req, res) => {
 
   const command = `yt-dlp -f best -g "${url}"`;
 
-  exec(command, (err, stdout) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Download failed");
-    }
-
-    const videoUrl = stdout.trim();
-
-    res.redirect(videoUrl);
-  });
+  runCommand(command, res);
 });
+
 /* =========================
    AUDIO DOWNLOAD (MP3)
 ========================= */
 app.get('/download-mp3', (req, res) => {
   const url = req.query.url;
 
+  if (!url) {
+    return res.status(400).send("No URL provided");
+  }
+
   const command = `yt-dlp -f bestaudio -g "${url}"`;
 
-  exec(command, (err, stdout) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Download failed");
-    }
-
-    const audioUrl = stdout.trim();
-
-    res.redirect(audioUrl);
-  });
+  runCommand(command, res);
 });
-app.listen(3000, () => {
-  console.log("🔥 Server running on http://localhost:3000");
+
+/* =========================
+   ROOT CHECK (IMPORTANT)
+========================= */
+app.get('/', (req, res) => {
+  res.send("🔥 Backend is running");
+});
+
+/* =========================
+   SERVER START (RENDER FIX)
+========================= */
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🔥 Server running on port ${PORT}`);
 });
