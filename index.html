@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ad-Free YouTube Player — Mritunjay Kumar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <style>
+    :root {
+      --bg: #060810;
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(100,180,255,0.12);
+      --accent: #38bdf8;
+      --accent2: #0ea5e9;
+      --accent-glow: rgba(56,189,248,0.22);
+      --text: #e8f0fe;
+      --text-muted: #7890a8;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font-head: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --tr: 0.32s cubic-bezier(0.4,0,0.2,1);
+      --shadow: 0 8px 40px rgba(0,0,0,0.5);
+      --green: #4ade80;
+      --green-glow: rgba(74,222,128,0.16);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;}
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-thumb{background:var(--accent);border-radius:99px;}
+
+    .blob{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;}
+    .blob-1{width:520px;height:520px;background:rgba(56,189,248,0.07);top:-120px;right:-120px;animation:fb 9s ease-in-out infinite;}
+    .blob-2{width:300px;height:300px;background:rgba(14,165,233,0.05);bottom:-60px;left:-80px;animation:fb 9s ease-in-out infinite;animation-delay:-4s;}
+    @keyframes fb{0%,100%{transform:translate(0,0);}50%{transform:translate(18px,-18px);}}
+
+    header{position:sticky;top:0;z-index:100;background:rgba(6,8,16,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);padding:14px 0;}
+    .header-inner{width:min(1100px,94%);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+    .logo{font-family:var(--font-head);font-weight:800;font-size:1.2rem;letter-spacing:.04em;color:var(--text);text-decoration:none;}
+    .logo span{color:var(--accent);}
+    .back-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-head);font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:8px 18px;border-radius:50px;background:var(--glass);border:1px solid var(--glass-border);color:var(--text-muted);text-decoration:none;transition:all var(--tr);}
+    .back-btn:hover{background:var(--accent-glow);color:var(--accent);border-color:var(--accent);transform:translateX(-3px);}
+
+    main{flex:1;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:60px 20px 80px;}
+    .page-badge{display:inline-flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--glass-border);border-radius:50px;padding:6px 16px;font-family:var(--font-head);font-size:.7rem;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;}
+    .page-badge::before{content:'';width:7px;height:7px;background:var(--accent);border-radius:50%;animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+    .page-title{font-family:var(--font-head);font-weight:800;font-size:clamp(1.8rem,5vw,3rem);letter-spacing:-.02em;text-align:center;margin-bottom:10px;line-height:1.15;}
+    .page-subtitle{font-size:.92rem;color:var(--text-muted);text-align:center;margin-bottom:40px;max-width:480px;line-height:1.6;}
+
+    .player-card{width:min(780px,100%);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow);}
+
+    .input-row{display:flex;gap:10px;margin-bottom:18px;}
+    .input-wrap{flex:1;position:relative;}
+    .input-wrap .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.9rem;pointer-events:none;transition:color var(--tr);}
+    .input-wrap:focus-within .ico{color:var(--accent);}
+    .url-input{width:100%;padding:14px 14px 14px 40px;background:rgba(255,255,255,.04);border:1px solid var(--glass-border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font-body);font-size:.9rem;outline:none;transition:border-color var(--tr),box-shadow var(--tr);}
+    .url-input::placeholder{color:var(--text-muted);}
+    .url-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+    .play-btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-head);font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:14px 22px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;border:none;cursor:pointer;box-shadow:0 0 20px var(--accent-glow);transition:all var(--tr);white-space:nowrap;}
+    .play-btn:hover{transform:translateY(-2px);box-shadow:0 6px 30px var(--accent-glow);}
+    .play-btn:active{transform:scale(.97);}
+    .clear-btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 15px;border-radius:var(--radius-sm);background:var(--glass);border:1px solid var(--glass-border);color:var(--text-muted);cursor:pointer;transition:all var(--tr);}
+    .clear-btn:hover{background:rgba(248,113,113,.12);color:#f87171;border-color:rgba(248,113,113,.3);}
+
+    .error-msg{display:none;align-items:center;gap:8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:.82rem;color:#f87171;margin-bottom:16px;}
+    .error-msg.show{display:flex;animation:fi .3s ease;}
+
+    .video-area{border-radius:var(--radius-sm);overflow:hidden;position:relative;background:rgba(0,0,0,.45);border:1px solid var(--glass-border);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;}
+    .default-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;text-align:center;}
+    .default-icon{width:72px;height:72px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:var(--accent);animation:pulse 3s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--accent-glow);}50%{box-shadow:0 0 0 14px rgba(56,189,248,0);}}
+    .default-state h3{font-family:var(--font-head);font-size:1rem;font-weight:700;}
+    .default-state p{font-size:.82rem;color:var(--text-muted);max-width:260px;}
+    .loader-state{display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;}
+    .loader-state.show{display:flex;animation:fi .3s ease;}
+    .ring{width:52px;height:52px;border:4px solid rgba(56,189,248,.15);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loader-state p{font-family:var(--font-head);font-size:.75rem;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase;}
+    .video-area iframe{position:absolute;inset:0;width:100%;height:100%;border:none;display:none;border-radius:var(--radius-sm);}
+    .video-area iframe.show{display:block;animation:fi .5s ease;}
+    @keyframes fi{from{opacity:0;transform:scale(.98);}to{opacity:1;transform:scale(1);}}
+
+    /* ═══════════════════════════════
+       DOWNLOAD PANEL
+    ═══════════════════════════════ */
+    .dl-panel{margin-top:20px;display:none;background:rgba(56,189,248,.025);border:1px solid var(--glass-border);border-radius:var(--radius-sm);overflow:hidden;}
+    .dl-panel.show{display:block;animation:slideUp .4s ease;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* Top info bar */
+    .dl-topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:16px 20px;border-bottom:1px solid var(--glass-border);}
+    .dl-topbar-left{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);}
+    .dl-meta{display:flex;align-items:center;gap:10px;}
+    .dl-thumb{width:54px;height:36px;border-radius:6px;background:rgba(56,189,248,.1);border:1px solid var(--glass-border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:.8rem;}
+    .dl-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+    .dl-vid-name{font-size:.78rem;color:var(--text-muted);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* Steps */
+    .dl-steps{display:flex;gap:0;border-bottom:1px solid var(--glass-border);}
+    .dl-step{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 8px;font-family:var(--font-head);font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);border-right:1px solid var(--glass-border);}
+    .dl-step:last-child{border-right:none;}
+    .dl-step-num{width:20px;height:20px;border-radius:50%;background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.3);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--accent);flex-shrink:0;}
+
+    /* Main download content */
+    .dl-body{padding:20px;}
+
+    /* Site cards */
+    .dl-sites-label{font-family:var(--font-head);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;}
+    .dl-sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:20px;}
+
+    .dl-site-btn{
+      display:flex;align-items:center;gap:12px;
+      padding:14px 16px;border-radius:var(--radius-sm);
+      border:1px solid var(--glass-border);background:var(--glass);
+      text-decoration:none;cursor:pointer;
+      transition:all var(--tr);position:relative;overflow:hidden;
+    }
+    .dl-site-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent-glow),transparent);opacity:0;transition:opacity var(--tr);}
+    .dl-site-btn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px var(--accent-glow);}
+    .dl-site-btn:hover::after{opacity:1;}
+
+    .site-ico{width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.2);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--accent);position:relative;z-index:1;}
+    .dl-site-btn.mp3 .site-ico{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.2);color:var(--green);}
+    .dl-site-btn.mp3:hover{border-color:var(--green);box-shadow:0 6px 20px var(--green-glow);}
+    .dl-site-btn.mp3::after{background:linear-gradient(135deg,var(--green-glow),transparent);}
+
+    .site-txt{position:relative;z-index:1;}
+    .site-name{font-family:var(--font-head);font-size:.8rem;font-weight:700;letter-spacing:.02em;display:block;color:var(--text);}
+    .site-sub{font-size:.67rem;color:var(--text-muted);display:block;margin-top:2px;}
+
+    /* Divider */
+    .dl-divider{height:1px;background:var(--glass-border);margin:0 0 16px;}
+
+    /* Note */
+    .dl-note{display:flex;align-items:flex-start;gap:8px;font-size:.72rem;color:var(--text-muted);line-height:1.6;}
+    .dl-note i{color:var(--accent);flex-shrink:0;margin-top:2px;}
+    .dl-note strong{color:var(--text);}
+
+    /* Tips */
+    .tips-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+    .tip{display:flex;align-items:center;gap:6px;background:var(--glass);border:1px solid var(--glass-border);border-radius:50px;padding:5px 12px;font-size:.7rem;color:var(--text-muted);font-family:var(--font-head);}
+    .tip i{color:var(--accent);font-size:.68rem;}
+
+    footer{position:relative;z-index:1;border-top:1px solid var(--glass-border);padding:22px 20px;text-align:center;}
+    footer p{font-size:.76rem;color:var(--text-muted);}
+    footer a{color:var(--accent);text-decoration:none;}
+    footer a:hover{text-decoration:underline;}
+
+    @media(max-width:620px){
+      .player-card{padding:18px;}
+      .input-row{flex-direction:column;}
+      .play-btn,.clear-btn{width:100%;justify-content:center;}
+      .dl-sites{grid-template-columns:1fr 1fr;}
+      .dl-step span:not(.dl-step-num){display:none;}
+      .dl-vid-name{max-width:140px;}
+    }
+    @media(max-width:360px){.dl-sites{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">MRITUNJAY<span>.</span></a>
+    <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Portfolio</a>
+  </div>
+</header>
+
+<main>
+  <div class="page-badge">Ad-Free Experience</div>
+  <h1 class="page-title">YouTube Player <span style="color:var(--accent)">Without Ads & Download </span></h1>
+  <p class="page-subtitle">Watch ad-free and download videos in MP4 or MP3. Choose a download site below — your link will be copied automatically.</p>
+
+  <div class="player-card">
+
+    <div class="input-row">
+      <div class="input-wrap">
+        <input class="url-input" type="text" id="videoUrl"
+          placeholder="Paste YouTube URL here…" autocomplete="off"
+          onkeydown="if(event.key==='Enter') loadVideo()" />
+        <i class="fa-brands fa-youtube ico"></i>
+      </div>
+      <button class="play-btn" onclick="loadVideo()"><i class="fa-solid fa-play"></i> Play</button>
+      <button class="clear-btn" onclick="clearAll()" title="Clear"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="error-msg" id="errBox">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span id="errText"></span>
+    </div>
+
+    <!-- Player -->
+    <div class="video-area">
+      <div class="default-state" id="defaultState">
+        <div class="default-icon"><i class="fa-brands fa-youtube"></i></div>
+        <h3>Your video will appear here</h3>
+        <p>Paste a YouTube URL above and hit Play to watch without ads.</p>
+      </div>
+      <div class="loader-state" id="loaderState">
+        <div class="ring"></div>
+        <p>Loading video…</p>
+      </div>
+      <iframe id="player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         DOWNLOAD PANEL
+    ═══════════════════════════════════════ -->
+    <div class="dl-panel" id="dlPanel">
+
+      <!-- Top bar -->
+      <div class="dl-topbar">
+        <div class="dl-topbar-left"><i class="fa-solid fa-download"></i> Download Video</div>
+        <div class="dl-meta">
+          <div class="dl-thumb" id="dlThumb"><i class="fa-brands fa-youtube"></i></div>
+          <span class="dl-vid-name" id="dlName">Fetching info…</span>
+        </div>
+      </div>
+
+      <!-- How-to steps -->
+      <div class="dl-steps">
+        <div class="dl-step"><span class="dl-step-num">1</span><span>Click a button below</span></div>
+        <div class="dl-step"><span class="dl-step-num">2</span><span>Site opens with video</span></div>
+        <div class="dl-step"><span class="dl-step-num">3</span><span>Choose quality &amp; save</span></div>
+      </div>
+
+      <!-- Download body -->
+      <div class="dl-body">
+
+        <p class="dl-sites-label">Video (MP4)</p>
+        <div class="dl-sites" id="mp4Sites">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="dl-divider"></div>
+
+        <p class="dl-sites-label">Audio Only (MP3)</p>
+        <div class="dl-sites" id="mp3Sites">
+          <!-- filled by JS -->
+        </div>
+
+        <div class="dl-note">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Each button opens a <strong>trusted download site</strong> in a new tab with your video URL pre-filled — no copy-pasting needed. The site will process the video and let you save it directly to your device.</span>
+        </div>
+
+      </div>
+    </div>
+    <!-- ═══════════════════════════════════════ -->
+
+    <div class="tips-row">
+      <span class="tip"><i class="fa-solid fa-link"></i> youtube.com/watch?v=…</span>
+      <span class="tip"><i class="fa-solid fa-link"></i> youtu.be/…</span>
+      <span class="tip"><i class="fa-solid fa-link"></i> /shorts/…</span>
+      <span class="tip"><i class="fa-solid fa-keyboard"></i> Enter to play</span>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <p>Built by <a href="index.html">Mritunjay Kumar</a> · <a href="index.html#projects">Portfolio Projects</a></p>
+</footer>
+
+<script>
+'use strict';
+
+let currentVideoId = null;
+
+/* ─── BACKEND DOWNLOAD BUTTONS ─── */
+function renderDownloadButtons(videoId) {
+  const url = `https://www.youtube.com/watch?v=${videoId}`;
+
+  document.getElementById('mp4Sites').innerHTML = `
+    <a class="dl-site-btn" href="http://localhost:3000/download?url=${encodeURIComponent(url)}">
+      <div class="site-ico"><i class="fa-solid fa-download"></i></div>
+      <div class="site-txt">
+        <span class="site-name">Download MP4</span>
+        <span class="site-sub">High Quality Video</span>
+      </div>
+    </a>
+  `;
+
+  document.getElementById('mp3Sites').innerHTML = `
+    <a class="dl-site-btn mp3" href="http://localhost:3000/download-mp3?url=${encodeURIComponent(url)}">
+      <div class="site-ico"><i class="fa-solid fa-music"></i></div>
+      <div class="site-txt">
+        <span class="site-name">Download MP3</span>
+        <span class="site-sub">Audio Only</span>
+      </div>
+    </a>
+  `;
+}
+
+/* ─── oEmbed info ─── */
+async function fetchInfo(id) {
+  try {
+    const r = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent('https://www.youtube.com/watch?v=' + id)}&format=json`);
+    if (r.ok) {
+      const d = await r.json();
+      return { title: d.title, thumb: d.thumbnail_url };
+    }
+  } catch {}
+  return { title: 'YouTube Video', thumb: null };
+}
+
+/* ─── Extract video ID ─── */
+function extractId(url) {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|.*\/|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+/* ─── Error UI ─── */
+function showErr(msg) {
+  document.getElementById('errText').textContent = msg;
+  document.getElementById('errBox').classList.add('show');
+}
+function hideErr() {
+  document.getElementById('errBox').classList.remove('show');
+}
+
+/* ─── Reset ─── */
+function resetPlayer() {
+  document.getElementById('defaultState').style.display = 'flex';
+  document.getElementById('loaderState').classList.remove('show');
+
+  const p = document.getElementById('player');
+  p.classList.remove('show');
+  p.src = '';
+
+  document.getElementById('dlPanel').classList.remove('show');
+
+  const oldFallback = document.getElementById('fallbackBox');
+  if (oldFallback) oldFallback.remove();
+
+  currentVideoId = null;
+}
+
+/* ─── FALLBACK UI ─── */
+function showFallback(id) {
+  const videoArea = document.querySelector('.video-area');
+
+  if (document.getElementById('fallbackBox')) return;
+
+  const fallback = document.createElement('div');
+  fallback.id = 'fallbackBox';
+
+  fallback.style.position = 'absolute';
+  fallback.style.inset = '0';
+  fallback.style.display = 'flex';
+  fallback.style.flexDirection = 'column';
+  fallback.style.alignItems = 'center';
+  fallback.style.justifyContent = 'center';
+  fallback.style.background = 'rgba(0,0,0,0.85)';
+  fallback.style.backdropFilter = 'blur(10px)';
+  fallback.style.zIndex = '5';
+  fallback.style.textAlign = 'center';
+  fallback.style.padding = '20px';
+
+  fallback.innerHTML = `
+    <i class="fa-solid fa-triangle-exclamation" style="font-size:28px;color:#f87171;margin-bottom:10px;"></i>
+    <p style="margin-bottom:12px;font-size:14px;color:#ccc;">
+      This video cannot be played here
+    </p>
+    <a href="https://www.youtube.com/watch?v=${id}" target="_blank"
+       style="padding:10px 18px;background:#38bdf8;color:#000;border-radius:8px;text-decoration:none;font-weight:600;">
+       ▶ Watch on YouTube
+    </a>
+  `;
+
+  videoArea.appendChild(fallback);
+}
+
+/* ─── Load Video ─── */
+async function loadVideo() {
+  const raw = document.getElementById('videoUrl').value.trim();
+  hideErr();
+
+  if (!raw) {
+    showErr('Please paste a YouTube URL to continue.');
+    resetPlayer();
+    return;
+  }
+
+  const id = extractId(raw);
+  if (!id) {
+    showErr('Invalid YouTube URL.');
+    resetPlayer();
+    return;
+  }
+
+  currentVideoId = id;
+
+  document.getElementById('defaultState').style.display = 'none';
+  document.getElementById('loaderState').classList.add('show');
+  document.getElementById('player').classList.remove('show');
+  document.getElementById('dlPanel').classList.remove('show');
+
+  const oldFallback = document.getElementById('fallbackBox');
+  if (oldFallback) oldFallback.remove();
+
+  const [info] = await Promise.all([
+    fetchInfo(id),
+    new Promise(r => setTimeout(r, 800))
+  ]);
+
+  const player = document.getElementById('player');
+
+  // ✅ use better embed
+  player.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+
+  document.getElementById('loaderState').classList.remove('show');
+  player.classList.add('show');
+
+  // 🔥 SMART fallback (FIXED)
+  let fallbackTimer = setTimeout(() => {
+    showFallback(id);
+  }, 4000);
+
+  player.onload = () => {
+    clearTimeout(fallbackTimer);
+  };
+
+  document.getElementById('dlName').textContent = info.title;
+
+  const thumb = document.getElementById('dlThumb');
+  thumb.innerHTML = info.thumb
+    ? `<img src="${info.thumb}" />`
+    : `<i class="fa-brands fa-youtube"></i>`;
+
+  renderDownloadButtons(id);
+  document.getElementById('dlPanel').classList.add('show');
+}
+
+/* ─── Clear ─── */
+function clearAll() {
+  document.getElementById('videoUrl').value = '';
+  hideErr();
+  resetPlayer();
+}
+</script>
+
+</body>
+</html>
