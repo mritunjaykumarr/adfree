@@ -28,33 +28,43 @@ function runCommand(command, res) {
 /* =========================
    VIDEO DOWNLOAD (MP4)
 ========================= */
-app.get('/download', (req, res) => {
+app.get('/download', async (req, res) => {
   const url = req.query.url;
 
   if (!url) {
     return res.status(400).send("No URL provided");
   }
 
- const command = `python3 -m yt_dlp -f "best[ext=mp4]" -g "${url}"`;
+  try {
+    const api = `https://api.vevioz.com/api/button/mp4/${encodeURIComponent(url)}`;
 
-  runCommand(command, res);
+    res.redirect(api);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Download failed");
+  }
 });
-
 /* =========================
    AUDIO DOWNLOAD (MP3)
 ========================= */
-app.get('/download-mp3', (req, res) => {
+app.get('/download-mp3', async (req, res) => {
   const url = req.query.url;
 
   if (!url) {
     return res.status(400).send("No URL provided");
   }
 
- const command = `python3 -m yt_dlp -f "bestaudio" -g "${url}"`;
+  try {
+    const api = `https://api.vevioz.com/api/button/mp3/${encodeURIComponent(url)}`;
 
-  runCommand(command, res);
+    res.redirect(api);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Download failed");
+  }
 });
-
 /* =========================
    ROOT CHECK (IMPORTANT)
 ========================= */
