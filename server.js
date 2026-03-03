@@ -35,7 +35,7 @@ app.get('/download', (req, res) => {
     return res.status(400).send("No URL provided");
   }
 
-  const command = `python3 -m yt_dlp -f best -g "${url}"`;
+ const command = `python3 -m yt_dlp -f "best[ext=mp4]" -g "${url}"`;
 
   runCommand(command, res);
 });
@@ -50,7 +50,7 @@ app.get('/download-mp3', (req, res) => {
     return res.status(400).send("No URL provided");
   }
 
-  const command = `yt-dlp -f bestaudio -g "${url}"`;
+ const command = `python3 -m yt_dlp -f "bestaudio" -g "${url}"`;
 
   runCommand(command, res);
 });
